@@ -17,8 +17,8 @@ Here are some ideas to get you started:
 <p align="center">
   <br>
   <img src="https://img.shields.io/badge/flutter-02569B?style=flat-square&logo=flutter&logoColor=46CAF9"/></a>&nbsp
+  <img src="https://img.shields.io/badge/Dart-0175C2?style=flat-square&logo=dart&logoColor=white"/></a>&nbsp
   <img src="https://img.shields.io/badge/Javascript-ffb13b?style=flat-square&logo=javascript&logoColor=white"/></a>&nbsp
-  <br>
   <br>
   <img src="https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=Node.js&logoColor=white"/></a>&nbsp
   <img src="https://img.shields.io/badge/Express-000000?style=flat-square&logo=Express&logoColor=white"/></a>&nbsp
