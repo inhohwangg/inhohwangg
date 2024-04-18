@@ -16,7 +16,7 @@ Here are some ideas to get you started:
 <h3 align="center">📚 Tech Stack 📚</h3>
 <p align="center">
   <br>
-  <img src="https://img.shields.io/badge/flutter-02569B?style=flat-square&logo=flutter&logoColor=blue"/></a>&nbsp
+  <img src="https://img.shields.io/badge/flutter-white?style=flat-square&logo=flutter&logoColor=02569B"/></a>&nbsp
   <img src="https://img.shields.io/badge/Javascript-ffb13b?style=flat-square&logo=javascript&logoColor=white"/></a>&nbsp
   <br>
   <br>
