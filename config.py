@@ -1,6 +1,6 @@
 # Configuration for Pipeline A
-NICHE = "테크 및 가젯 리뷰"
-KEYWORDS = ["최신 스마트폰", "무선 이어폰", "스마트워치", "노트북", "가성비 태블릿"]
+NICHE = "생활 필수품 및 트렌드"
+KEYWORDS = ["자취 필수템", "가성비 무선 이어폰", "20대 여성 선물 추천", "반려동물 간식 베스트", "캠핑용품 초보자 가이드", "피부 트러블 진정템"]
 AFFILIATE_PROGRAM_NAME = "쿠팡 파트너스"
 
 # GitHub Pages configuration
