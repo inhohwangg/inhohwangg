@@ -27,31 +27,18 @@ sys.modules[spec.name] = config
 spec.loader.exec_module(config)
 
 def generate_article(topic, affiliate_id):
-    # Simplified content generation for demonstration
-    if "스마트폰" in topic:
-        title = f"혁신적인 {topic} 상세 리뷰 및 구매 가이드"
-        intro = f"오늘날의 스마트폰 시장은 끊임없이 진화하고 있으며, 최근 출시된 {topic}은 사용자들에게 전에 없던 경험을 선사합니다. 이 리뷰에서는 {topic}의 주요 특징과 성능을 심층적으로 분석하고, 현명한 구매를 위한 가이드를 제공합니다."
-        feature1 = "압도적인 카메라 성능: 야간 촬영도 선명하게!"
-        feature2 = "초고속 프로세서: 어떤 앱도 버벅임 없이 쾌적하게!"
-        feature3 = "하루 종일 가는 배터리: 충전 걱정 없이 사용하세요!"
-        benefits = f"{topic}은 단순한 스마트폰을 넘어, 당신의 일상에 혁신을 가져다줄 강력한 도구입니다. 최고의 성능과 사용자 경험을 원한다면, {topic}은 후회 없는 선택이 될 것입니다."
-        conclusion = f"지금 바로 {topic}의 놀라운 기능을 경험해보세요. 이 스마트폰은 당신의 디지털 라이프를 한 단계 업그레이드할 것입니다."
-        
-        # Generic Coupang search link with affiliate ID
-        product_search_query = topic.replace(" ", "+")
-        affiliate_link = f"https://www.coupang.com/np/search?q={product_search_query}&channel=user_input&listSize=30&isInitialSearch=Y&source=search&memberID={affiliate_id}"
-
-    else:
-        # Generic fallback content
-        title = f"새로운 제품: {topic}의 모든 것"
-        intro = f"이 글에서는 {topic}에 대해 자세히 알아보겠습니다."
-        feature1 = "특징 1"
-        feature2 = "특징 2"
-        feature3 = "특징 3"
-        benefits = "이 제품의 장점은 매우 많습니다."
-        conclusion = "지금 바로 경험해보세요."
-        affiliate_link = f"https://www.coupang.com/?memberID={affiliate_id}" # Fallback generic link
-
+    # Simplified dummy content generation
+    title = f"더미 콘텐츠: {topic}"
+    intro = f"이것은 {topic}에 대한 매우 간단한 더미 소개입니다."
+    feature1 = "더미 특징 1"
+    feature2 = "더미 특징 2"
+    feature3 = "더미 특징 3"
+    benefits = "이 더미 콘텐츠는 아무런 실제 정보도 담고 있지 않습니다."
+    conclusion = "여기서 더미 콘텐츠는 끝납니다."
+    
+    # Generic Coupang search link with affiliate ID
+    product_search_query = topic.replace(" ", "+")
+    affiliate_link = f"https://www.coupang.com/np/search?q={product_search_query}&channel=user_input&listSize=30&isInitialSearch=Y&source=search&memberID={affiliate_id}"
 
     template_path = os.path.join(os.path.dirname(__file__), 'templates', 'article.md')
     with open(template_path, 'r', encoding='utf-8') as f:
@@ -89,10 +76,10 @@ if __name__ == "__main__":
         print("Error: COUPANG_AFFILIATE_ID is not set in .env file or environment variables.")
         sys.exit(1)
 
-    # For the first content, use the first keyword
-    first_keyword = config.KEYWORDS[0]
+    # Use only the first keyword for simplified content generation
+    target_keyword = config.KEYWORDS[0]
     
-    article_title, generated_markdown = generate_article(first_keyword, affiliate_id)
+    article_title, generated_markdown = generate_article(target_keyword, affiliate_id)
 
     output_dir = os.path.join(os.path.dirname(__file__), 'output')
     os.makedirs(output_dir, exist_ok=True)
@@ -104,7 +91,7 @@ if __name__ == "__main__":
     with open(output_filepath, 'w', encoding='utf-8') as f:
         f.write(generated_markdown)
     
-    print(f"--- 첫 번째 자동 생성 콘텐츠 ---")
+    print(f"--- 생성된 더미 콘텐츠 ---")
     print(f"**주제:** {article_title}")
     print(f"**마크다운 결과물:**")
     print("```markdown")
@@ -134,7 +121,7 @@ if __name__ == "__main__":
     run_git_command(f"git add .gitignore", repo_dir) # Add .gitignore itself
 
     # Commit the changes
-    commit_message = f"fix: Use .env for affiliate ID and add .gitignore"
+    commit_message = f"refactor: Simplify content generation to dummy text for {target_keyword}"
     run_git_command(f"git commit -m \"{commit_message}\" ", repo_dir)
 
     # Fetch remote changes and rebase local changes on top, allowing unrelated histories for first sync
