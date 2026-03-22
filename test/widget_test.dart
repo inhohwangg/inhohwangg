@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:video_audio_converter/main.dart';
+import 'package:video_audio_converter/screens/main_shell.dart';
 import 'helpers/mock_converter_service.dart';
 
 void main() {
@@ -13,19 +14,7 @@ void main() {
         converterService: mockService,
       ));
 
-      // 앱이 렌더링되는지 확인
       expect(find.byType(MaterialApp), findsOneWidget);
-    });
-
-    testWidgets('앱 타이틀이 올바름', (tester) async {
-      final mockService = MockConverterService();
-      setupEmptyFileList(mockService);
-
-      await tester.pumpWidget(VideoAudioConverterApp(
-        converterService: mockService,
-      ));
-
-      expect(find.text('동영상 → 오디오 변환기'), findsOneWidget);
     });
 
     testWidgets('Material3 테마 적용 확인', (tester) async {
@@ -36,11 +25,11 @@ void main() {
         converterService: mockService,
       ));
 
-      final theme = Theme.of(tester.element(find.byType(Scaffold)));
+      final theme = Theme.of(tester.element(find.byType(Scaffold).first));
       expect(theme.useMaterial3, isTrue);
     });
 
-    testWidgets('홈 화면 Scaffold 렌더링', (tester) async {
+    testWidgets('MainShell이 렌더링됨', (tester) async {
       final mockService = MockConverterService();
       setupEmptyFileList(mockService);
 
@@ -48,7 +37,40 @@ void main() {
         converterService: mockService,
       ));
 
-      expect(find.byType(Scaffold), findsOneWidget);
+      expect(find.byType(MainShell), findsOneWidget);
+    });
+
+    testWidgets('NavigationBar가 표시됨', (tester) async {
+      final mockService = MockConverterService();
+      setupEmptyFileList(mockService);
+
+      await tester.pumpWidget(VideoAudioConverterApp(
+        converterService: mockService,
+      ));
+
+      expect(find.byType(NavigationBar), findsOneWidget);
+    });
+
+    testWidgets('NavigationBar에 "변환" 항목 표시', (tester) async {
+      final mockService = MockConverterService();
+      setupEmptyFileList(mockService);
+
+      await tester.pumpWidget(VideoAudioConverterApp(
+        converterService: mockService,
+      ));
+
+      expect(find.text('변환'), findsOneWidget);
+    });
+
+    testWidgets('NavigationBar에 "변환 목록" 항목 표시', (tester) async {
+      final mockService = MockConverterService();
+      setupEmptyFileList(mockService);
+
+      await tester.pumpWidget(VideoAudioConverterApp(
+        converterService: mockService,
+      ));
+
+      expect(find.text('변환 목록'), findsOneWidget);
     });
   });
 }

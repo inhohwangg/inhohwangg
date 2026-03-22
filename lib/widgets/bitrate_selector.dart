@@ -13,69 +13,211 @@ class BitrateSelector extends StatelessWidget {
     required this.onBitrateChanged,
   });
 
-  bool get _showsBitrate =>
-      selectedFormat != AudioFormat.wav && selectedFormat != AudioFormat.flac;
+  static const _bitrates = [64, 128, 192, 256, 320];
 
   @override
   Widget build(BuildContext context) {
-    if (!_showsBitrate) return const SizedBox.shrink();
+    if (!selectedFormat.supportsBitrate) return const SizedBox.shrink();
 
-    final colorScheme = Theme.of(context).colorScheme;
-    final bitrates = [64, 128, 192, 256, 320];
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
-    return Card(
-      elevation: 1,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '비트레이트',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.primary,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 12),
+          child: Row(
+            children: [
+              Text(
+                '비트레이트',
+                style: tt.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: cs.onSurface,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: cs.tertiaryContainer,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${selectedBitrate}kbps',
+                  style: tt.labelSmall?.copyWith(
+                    color: cs.onTertiaryContainer,
+                    fontWeight: FontWeight.w600,
                   ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: bitrates.map((bitrate) {
-                final isSelected = bitrate == selectedBitrate;
-                return ChoiceChip(
-                  label: Text('${bitrate}kbps'),
-                  selected: isSelected,
-                  onSelected: (_) => onBitrateChanged(bitrate),
-                  selectedColor: colorScheme.primaryContainer,
-                  labelStyle: TextStyle(
-                    color: isSelected
-                        ? colorScheme.primary
-                        : colorScheme.onSurface,
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _getBitrateDescription(selectedBitrate),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.outline,
-                  ),
-            ),
-          ],
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+        SegmentedButton<int>(
+          segments: _bitrates
+              .map((b) => ButtonSegment<int>(
+                    value: b,
+                    label: Text(b == 192 ? '$b ★' : '$b'),
+                  ))
+              .toList(),
+          selected: {selectedBitrate},
+          onSelectionChanged: (s) => onBitrateChanged(s.first),
+          style: SegmentedButton.styleFrom(
+            backgroundColor: cs.surfaceContainerHighest,
+            foregroundColor: cs.onSurfaceVariant,
+            selectedBackgroundColor: cs.secondaryContainer,
+            selectedForegroundColor: cs.onSecondaryContainer,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            side: BorderSide.none,
+            textStyle: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          showSelectedIcon: false,
+        ),
+        const SizedBox(height: 10),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: _BitrateInfo(
+            key: ValueKey(selectedBitrate),
+            bitrate: selectedBitrate,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BitrateInfo extends StatelessWidget {
+  final int bitrate;
+
+  const _BitrateInfo({super.key, required this.bitrate});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final info = _getInfo(bitrate);
+
+    return Row(
+      children: [
+        _QualityBar(quality: info.quality, cs: cs),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                info.label,
+                style: tt.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: cs.onSurface,
+                ),
+              ),
+              Text(
+                info.description,
+                style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+              ),
+            ],
+          ),
+        ),
+        Text(
+          info.sizeHint,
+          style: tt.labelSmall?.copyWith(color: cs.outline),
+        ),
+      ],
     );
   }
 
-  String _getBitrateDescription(int bitrate) {
-    if (bitrate <= 64) return '저화질: 음성 통화 수준. 파일 크기 최소';
-    if (bitrate <= 128) return '표준: 일반 음악 감상에 적합';
-    if (bitrate <= 192) return '고품질: 대부분의 음악에 권장 (기본값)';
-    if (bitrate <= 256) return '매우 높은 품질: 고급 오디오';
-    return '최고 품질: 스튜디오급 음질. 파일 크기 최대';
+  _BitrateData _getInfo(int bitrate) {
+    switch (bitrate) {
+      case 64:
+        return _BitrateData(
+          quality: 0.2,
+          label: '저품질',
+          description: '음성·팟캐스트 용도',
+          sizeHint: '~0.5MB/분',
+        );
+      case 128:
+        return _BitrateData(
+          quality: 0.45,
+          label: '표준',
+          description: '일반 음악 감상',
+          sizeHint: '~1MB/분',
+        );
+      case 192:
+        return _BitrateData(
+          quality: 0.65,
+          label: '고품질 (권장)',
+          description: '대부분의 음악에 충분',
+          sizeHint: '~1.5MB/분',
+        );
+      case 256:
+        return _BitrateData(
+          quality: 0.85,
+          label: '매우 높음',
+          description: '고급 스피커·이어폰',
+          sizeHint: '~2MB/분',
+        );
+      default:
+        return _BitrateData(
+          quality: 1.0,
+          label: '최고 품질',
+          description: '스튜디오급 음질',
+          sizeHint: '~2.5MB/분',
+        );
+    }
   }
+}
+
+class _QualityBar extends StatelessWidget {
+  final double quality;
+  final ColorScheme cs;
+
+  const _QualityBar({required this.quality, required this.cs});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 6,
+      height: 40,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: LinearProgressIndicator(
+                value: quality,
+                minHeight: 40,
+                backgroundColor: cs.surfaceContainerHighest,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Color.lerp(cs.tertiary, cs.primary, quality) ?? cs.primary,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BitrateData {
+  final double quality;
+  final String label;
+  final String description;
+  final String sizeHint;
+
+  const _BitrateData({
+    required this.quality,
+    required this.label,
+    required this.description,
+    required this.sizeHint,
+  });
 }
