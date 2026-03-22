@@ -52,6 +52,10 @@ extension AudioFormatExt on AudioFormat {
         return 'OGG';
     }
   }
+
+  bool get supportsBitrate {
+    return this != AudioFormat.wav && this != AudioFormat.flac;
+  }
 }
 
 class ConversionResult {
@@ -59,15 +63,46 @@ class ConversionResult {
   final String? outputPath;
   final String? errorMessage;
 
-  ConversionResult({
+  const ConversionResult({
     required this.success,
     this.outputPath,
     this.errorMessage,
   });
 }
 
-class ConverterService {
-  static Future<ConversionResult> convertVideoToAudio({
+/// Abstract interface for ConverterService (enables mocking in tests)
+abstract class ConverterService {
+  Future<ConversionResult> convertVideoToAudio({
+    required String inputPath,
+    required AudioFormat format,
+    required int bitrate,
+    void Function(double progress)? onProgress,
+  });
+
+  Future<List<FileSystemEntity>> getConvertedFiles();
+
+  Future<bool> deleteFile(String filePath);
+}
+
+/// Real implementation using FFmpeg
+class ConverterServiceImpl implements ConverterService {
+  static bool _callbackRegistered = false;
+  static void Function(double)? _progressCallback;
+
+  /// Call once at app startup to register the global statistics callback
+  static void initializeCallbacks() {
+    if (_callbackRegistered) return;
+    _callbackRegistered = true;
+    FFmpegKitConfig.enableStatisticsCallback((statistics) {
+      final timeInMs = statistics.getTime();
+      if (timeInMs > 0 && _progressCallback != null) {
+        _progressCallback!(timeInMs.toDouble());
+      }
+    });
+  }
+
+  @override
+  Future<ConversionResult> convertVideoToAudio({
     required String inputPath,
     required AudioFormat format,
     required int bitrate,
@@ -81,45 +116,44 @@ class ConverterService {
       }
 
       final inputFileName = path.basenameWithoutExtension(inputPath);
-      final outputPath =
+      final outputFilePath =
           '${outputDir.path}/${inputFileName}_${DateTime.now().millisecondsSinceEpoch}.${format.extension}';
 
       // Get video duration for progress calculation
-      double? duration;
-      await FFmpegKitConfig.enableStatisticsCallback((statistics) {
-        if (duration != null && duration! > 0) {
-          final timeInMs = statistics.getTime();
-          if (timeInMs > 0) {
-            final progress = (timeInMs / 1000) / duration!;
-            onProgress?.call(progress.clamp(0.0, 1.0));
-          }
-        }
-      });
-
-      // Get duration first
+      double? durationMs;
       final probeSession = await FFmpegKit.execute(
-          '-i "$inputPath" -v quiet -show_entries format=duration -of csv=p=0');
-      final output = await probeSession.getOutput();
-      if (output != null) {
-        duration = double.tryParse(output.trim());
+          '-i "$inputPath" -v error -show_entries format=duration'
+          ' -of default=noprint_wrappers=1:nokey=1');
+      final durationOutput = await probeSession.getOutput();
+      if (durationOutput != null) {
+        final seconds = double.tryParse(durationOutput.trim());
+        if (seconds != null) durationMs = seconds * 1000;
       }
 
-      String bitrateStr = '${bitrate}k';
-      String command;
+      // Register progress callback before session starts
+      if (onProgress != null && durationMs != null && durationMs > 0) {
+        _progressCallback = (timeInMs) {
+          onProgress((timeInMs / durationMs!).clamp(0.0, 1.0));
+        };
+      }
 
-      if (format == AudioFormat.wav || format == AudioFormat.flac) {
-        command = '-i "$inputPath" -vn -acodec ${format.codec} "$outputPath"';
+      String command;
+      if (!format.supportsBitrate) {
+        command =
+            '-i "$inputPath" -vn -acodec ${format.codec} "$outputFilePath"';
       } else {
         command =
-            '-i "$inputPath" -vn -acodec ${format.codec} -ab $bitrateStr "$outputPath"';
+            '-i "$inputPath" -vn -acodec ${format.codec} -ab ${bitrate}k "$outputFilePath"';
       }
 
       final session = await FFmpegKit.execute(command);
+      _progressCallback = null;
+
       final returnCode = await session.getReturnCode();
 
       if (ReturnCode.isSuccess(returnCode)) {
         onProgress?.call(1.0);
-        return ConversionResult(success: true, outputPath: outputPath);
+        return ConversionResult(success: true, outputPath: outputFilePath);
       } else {
         final logs = await session.getLogs();
         final errorMsg = logs.map((l) => l.getMessage()).join('\n');
@@ -131,29 +165,22 @@ class ConverterService {
     }
   }
 
-  static Future<String?> getVideoDuration(String inputPath) async {
-    try {
-      final session = await FFmpegKit.execute(
-          '-i "$inputPath" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1');
-      return await session.getOutput();
-    } catch (e) {
-      return null;
-    }
-  }
-
-  static Future<List<FileSystemEntity>> getConvertedFiles() async {
+  @override
+  Future<List<FileSystemEntity>> getConvertedFiles() async {
     try {
       final directory = await getApplicationDocumentsDirectory();
       final outputDir = Directory('${directory.path}/converted_audio');
       if (!await outputDir.exists()) return [];
       return outputDir.listSync().whereType<File>().toList()
-        ..sort((a, b) => b.statSync().modified.compareTo(a.statSync().modified));
+        ..sort(
+            (a, b) => b.statSync().modified.compareTo(a.statSync().modified));
     } catch (e) {
       return [];
     }
   }
 
-  static Future<bool> deleteFile(String filePath) async {
+  @override
+  Future<bool> deleteFile(String filePath) async {
     try {
       final file = File(filePath);
       if (await file.exists()) {

@@ -5,7 +5,12 @@ import 'package:path/path.dart' as path;
 import '../services/converter_service.dart';
 
 class ConvertedFilesScreen extends StatefulWidget {
-  const ConvertedFilesScreen({super.key});
+  final ConverterService converterService;
+
+  const ConvertedFilesScreen({
+    super.key,
+    required this.converterService,
+  });
 
   @override
   State<ConvertedFilesScreen> createState() => _ConvertedFilesScreenState();
@@ -23,7 +28,7 @@ class _ConvertedFilesScreenState extends State<ConvertedFilesScreen> {
 
   Future<void> _loadFiles() async {
     setState(() => _isLoading = true);
-    final files = await ConverterService.getConvertedFiles();
+    final files = await widget.converterService.getConvertedFiles();
     if (mounted) {
       setState(() {
         _files = files;
@@ -55,7 +60,7 @@ class _ConvertedFilesScreenState extends State<ConvertedFilesScreen> {
     );
 
     if (confirmed == true) {
-      final success = await ConverterService.deleteFile(filePath);
+      final success = await widget.converterService.deleteFile(filePath);
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('파일이 삭제되었습니다.')),

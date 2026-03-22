@@ -10,7 +10,12 @@ import '../widgets/conversion_progress.dart';
 import 'converted_files_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final ConverterService converterService;
+
+  const HomeScreen({
+    super.key,
+    required this.converterService,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -78,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  Future<void> _startConversion() async {
+  Future<void> startConversion() async {
     if (_selectedVideoPath == null) return;
 
     setState(() {
@@ -88,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _errorMessage = null;
     });
 
-    final result = await ConverterService.convertVideoToAudio(
+    final result = await widget.converterService.convertVideoToAudio(
       inputPath: _selectedVideoPath!,
       format: _selectedFormat,
       bitrate: _selectedBitrate,
@@ -161,7 +166,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const ConvertedFilesScreen(),
+                  builder: (context) => ConvertedFilesScreen(
+                    converterService: widget.converterService,
+                  ),
                 ),
               );
             },
@@ -280,7 +287,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget _buildConvertButton(ColorScheme colorScheme) {
     return FilledButton.icon(
-      onPressed: _selectedVideoPath != null ? _startConversion : null,
+      onPressed: _selectedVideoPath != null ? startConversion : null,
       icon: const Icon(Icons.transform),
       label: const Text(
         '오디오로 변환',
@@ -344,7 +351,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const ConvertedFilesScreen(),
+                          builder: (context) => ConvertedFilesScreen(
+                            converterService: widget.converterService,
+                          ),
                         ),
                       );
                     },

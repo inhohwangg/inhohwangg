@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
+import 'services/converter_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const VideoAudioConverterApp());
+  ConverterServiceImpl.initializeCallbacks();
+  runApp(VideoAudioConverterApp(
+    converterService: ConverterServiceImpl(),
+  ));
 }
 
 class VideoAudioConverterApp extends StatelessWidget {
-  const VideoAudioConverterApp({super.key});
+  final ConverterService converterService;
+
+  const VideoAudioConverterApp({
+    super.key,
+    required this.converterService,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +41,7 @@ class VideoAudioConverterApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: HomeScreen(converterService: converterService),
     );
   }
 }
