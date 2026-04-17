@@ -115,6 +115,15 @@ class DownloaderViewModel(application: Application) : AndroidViewModel(applicati
         )
     }
 
+    /** 권한 거부 등 외부 이벤트를 Error 상태로 전달할 때 사용 */
+    fun setError(message: String) {
+        _uiState.value = DownloaderUiState.Error(message)
+    }
+
+    fun resetToIdle() {
+        _uiState.value = DownloaderUiState.Idle
+    }
+
     private suspend fun onDownloadSuccess() {
         _uiState.value = DownloaderUiState.Success("갤러리에 저장 완료! 갤러리 앱에서 확인하세요.")
         // 3초 후 입력 화면으로 자동 복귀
