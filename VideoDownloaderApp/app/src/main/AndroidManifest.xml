@@ -29,6 +29,7 @@
 
     <!-- ━━━━━━━━━━━━━━━ 앱 설정 ━━━━━━━━━━━━━━━ -->
     <application
+        android:name=".VideoDownloaderApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
