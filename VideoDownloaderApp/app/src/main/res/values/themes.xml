@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Compose 앱은 NoActionBar 테마를 사용.
+        실제 UI 테마는 Compose MaterialTheme에서 완전히 제어.
+    -->
+    <style name="Theme.VideoDownloader" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
