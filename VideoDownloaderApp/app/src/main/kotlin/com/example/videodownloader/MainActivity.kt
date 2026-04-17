@@ -4,23 +4,35 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.example.videodownloader.ui.screen.DownloaderScreen
+import com.example.videodownloader.ui.screen.DownloaderUiState
+import com.example.videodownloader.ui.theme.VideoDownloaderTheme
 
-// Step 2에서 UI 코드로 교체 예정
+// Step 2: 순수 UI 확인용 — Step 4에서 ViewModel로 교체
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // 외부 공유 인텐트(SNS 앱 등)에서 받은 URL 처리
+        val sharedUrl = intent?.getStringExtra(android.content.Intent.EXTRA_TEXT) ?: ""
+
         setContent {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Step 1 완료 - Step 2에서 UI를 구성합니다.")
+            VideoDownloaderTheme {
+                var url by remember { mutableStateOf(sharedUrl) }
+
+                DownloaderScreen(
+                    url = url,
+                    onUrlChange = { url = it },
+                    uiState = DownloaderUiState.Idle,  // Step 4에서 ViewModel 상태로 교체
+                    onDownloadClick = {
+                        // Step 4에서 ViewModel.startDownload() 호출로 교체
+                    }
+                )
             }
         }
     }
