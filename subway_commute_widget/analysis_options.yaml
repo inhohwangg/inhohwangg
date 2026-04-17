@@ -1,0 +1,11 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  plugins:
+    - custom_lint
+
+linter:
+  rules:
+    - prefer_single_quotes
+    - prefer_const_constructors
+    - avoid_print
